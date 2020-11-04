@@ -9,7 +9,8 @@ export function arrayInsertAt(arr, idx, value) {
 }
 
 export function subarray(arr, start, length) {
-    var endIndex = length === -1 ? arr.length : length
+    var lookForEnd = length === undefined || length === -1
+    var endIndex = lookForEnd ? arr.length - start : length
     var result = []
     for (var i = 0; i < endIndex; i++) {
         result.push(arr[start + i])
