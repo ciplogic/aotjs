@@ -1,4 +1,4 @@
-import {getStatement} from "../parseUtils.js";
+import {getStatement, parseJsExpression} from "../parseUtils.js";
 import {arrayInsertAt, joinArrays, subarray} from "../utilities.js";
 
 var idx = 0;
@@ -9,7 +9,9 @@ export function extractVar(assignedExpression, block, idxStatement) {
     varExpr.declarations[0].init = assignedExpression
     arrayInsertAt(block, idxStatement, varExpr)
 
-    return {varName, varExpr}
+    var varIdentifier = parseJsExpression(varName)
+
+    return {varName, varExpr, varIdentifier}
 }
 
 export function replaceExpressionWithArray(block, idxStatement, replaceArr) {

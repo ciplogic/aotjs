@@ -80,14 +80,11 @@ function removeUnreferencedLabels(blockNode) {
 }
 
 function simplifyGotosInBlock(blockNode) {
-    console.log(printAst(blockNode))
     do {
-        console.log('Optimize:')
         var canSimplify = simplifyConsecutiveLabels(blockNode)
         canSimplify |= removeUnreferencedLabels(blockNode)
         canSimplify |= removeGotoNextLine(blockNode)
 
-        console.log(printAst(blockNode))
     } while (canSimplify)
 }
 

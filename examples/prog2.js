@@ -1,7 +1,1 @@
-if ('is true') {
-    console.log('true');
-}
-
-while ('is true') {
-    console.log('is really true')
-}
+var c = 3+6*7, a=1
