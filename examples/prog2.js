@@ -1,1 +1,3 @@
-var c = 3+6*7, a=1
+const PI = Math.PI;
+const SOLAR_MASS = 4 * PI * PI;
+const DAYS_PER_YEAR = 365.24;

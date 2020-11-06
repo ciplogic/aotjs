@@ -14,6 +14,11 @@ export function extractVar(assignedExpression, block, idxStatement) {
     return {varName, varExpr, varIdentifier}
 }
 
+export function extractVarByProperty(obj, key, parent, idxStatement) {
+    const rightVar = extractVar(obj[key], parent.body, idxStatement)
+    obj[key] = rightVar.varIdentifier
+}
+
 export function replaceExpressionWithArray(block, idxStatement, replaceArr) {
     var beforeArr = subarray(block.body, 0, idxStatement)
     var afterArr = subarray(block.body, idxStatement + 1)

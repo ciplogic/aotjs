@@ -82,11 +82,37 @@ export function reduceWhile(tree) {
     return result;
 }
 
-export function reduceTree(tree) {
-    var found = true;
+export function reduceFor(tree) {
+    var result = false
 
-    while (found) {
-        found = reduceIfTree(tree)
+    //todo: handle break/continue as gotos
+    findExpressionInBlock(tree, 'ForStatement', (ifStatement, parent, idxStatement) => {
+        reduceTree(ifStatement.body)
+        var startWhileLabel = addLabel()
+        var trueIfLabel = addLabel()
+        var endWhileLabel = addLabel()
+        var testTrue = ifTrue(ifStatement.test, trueIfLabel.labelIndex)
+        var repeatLoop = addGoto(startWhileLabel.labelIndex)
+        var jumpToFalse = addGoto(endWhileLabel.labelIndex)
+        var newOps = joinArrays(
+            ifStatement.init,
+            [startWhileLabel.statement,
+                testTrue, jumpToFalse, trueIfLabel.statement],
+            ifStatement.body.body,
+            repeatLoop,
+            endWhileLabel.statement)
+
+        replaceExpressionWithArray(parent, idxStatement, newOps)
+        result = true
+    })
+    return result;
+}
+
+export function reduceTree(tree) {
+    do {
+        var found = false
+        found |= reduceIfTree(tree)
         found |= reduceWhile(tree)
-    }
+        found |= reduceFor(tree)
+    } while (found)
 }

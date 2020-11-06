@@ -1,6 +1,6 @@
 import {findExpressionInBlock} from "../visitorUtils.js";
 import {getStatement, printAst} from "../parseUtils.js";
-import {extractVar, replaceExpressionWithArray} from "./ExtractExpressionUtilities.js";
+import {extractVar, extractVarByProperty, replaceExpressionWithArray} from "./ExtractExpressionUtilities.js";
 
 function BreakMultipleVarsInOne(parentAst) {
     var result = false;
@@ -31,16 +31,79 @@ function breakReturnStatement(parentAst) {
     return result
 }
 
-function breakAssignmentExpressions(parentAst){
+function isNodeOfType(node, nodeType) {
+    return node && node.type === nodeType
+}
+
+function isNodeIdentifier(node) {
+    return isNodeOfType(node, 'Identifier')
+}
+
+function isNodeLiteral(node) {
+    return isNodeOfType(node, 'Literal')
+}
+
+function isNodeLiteralOrIdentifier(node) {
+    return isNodeLiteral(node) || isNodeIdentifier(node)
+}
+
+function isBreakableRightHandBinaryOperator(binOp) {
+    if (!isNodeLiteralOrIdentifier(binOp.left))
+        return true;
+    if (!isNodeLiteralOrIdentifier(binOp.right))
+        return true;
+    return false
+}
+
+function doSimplifyBinaryOp(binOp, parent, idxStatement) {
+
+    if (!isNodeOfType(binOp, "BinaryExpression")) return false
+    var simplifiedBinOp = false
+    if (isBreakableRightHandBinaryOperator(binOp)) {
+        extractVarByProperty(binOp, 'right', parent, idxStatement)
+        extractVarByProperty(binOp, 'left', parent, idxStatement)
+        simplifiedBinOp = true;
+    }
+    return simplifiedBinOp;
+}
+
+function breakAssignmentExpressions(parentAst) {
 
     var result = false;
-    findExpressionInBlock(parentAst, 'AssignmentStatement', (returnNode, parent, idxStatement) => {
-        if (!returnNode.argument || returnNode.argument.type === 'Identifier')
+    findExpressionInBlock(parentAst, 'ExpressionStatement', (node, parent, idxStatement) => {
+        if (result)
             return
-        const expr = extractVar(returnNode.argument, parent.body, idxStatement);
-        returnNode.argument = expr.varIdentifier
-        result = true
+        if (node.expression.type !== 'AssignmentExpression')
+            return
+        var assignmentExpression = node.expression
+        var right = assignmentExpression.right;
+        if (assignmentExpression.operator !== '=') {
+            if (!isNodeLiteralOrIdentifier(right)) {
+                extractVarByProperty(assignmentExpression, 'right', parent, idxStatement)
+                result = true;
+            }
+            return
+        }
+        if (!isNodeIdentifier(assignmentExpression.left) && !isNodeIdentifier(assignmentExpression.right)) {
+            extractVarByProperty(assignmentExpression, 'right', parent, idxStatement)
+        }
+        //here we have assignment
+        var simplifiedBinOp = doSimplifyBinaryOp(right, parent, idxStatement);
+        if (simplifiedBinOp) {
+            result = true;
+            return
+        }
+
     })
+    findExpressionInBlock(parentAst, 'VariableDeclaration', (node, parent, idxStatement) => {
+        var rightHandSide = node.declarations[0].init;
+        var simplifiedBinOp = doSimplifyBinaryOp(rightHandSide, parent, idxStatement);
+        if (simplifiedBinOp) {
+            result = true;
+            return
+        }
+    })
+
     return result
 }
 

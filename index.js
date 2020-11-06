@@ -6,7 +6,7 @@ import {reduceTree} from "./src/reducers/ControlFlowGraphBreaker.js";
 import {simplifyGotos} from "./src/reducers/labels/LabelAndGotoSimplifier.js";
 import {breakExpressionInMultiplePasses} from "./src/reducers/BreakExpressions.js";
 
-var code = readFile('./examples/prog1.js')
+var code = readFile('./examples/prog2.js')
 var tree = parseJs(code)
 
 reduceTree(tree)

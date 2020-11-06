@@ -32,6 +32,9 @@ export function joinArrays() {
     var result = []
     for (var arrIdx in arguments) {
         var arr = arguments[arrIdx]
+        if (arr === null || arr === undefined) {
+            continue
+        }
         if (Array.isArray(arr)) {
             result = result.concat(arr)
         } else {
