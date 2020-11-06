@@ -18,8 +18,8 @@ export function addGoto(labelIndex) {
 }
 
 export function ifTrue(nodeTest, labelIndex) {
-    var method = getStatement(`__ifTrue(true, ${labelIndex})`)
-    method.expression.arguments[0] = nodeTest
+    var method = getStatement(`__ifTrue(${labelIndex}, true)`)
+    method.expression.arguments[1] = nodeTest
     return method
 }
 
@@ -87,9 +87,6 @@ export function reduceTree(tree) {
 
     while (found) {
         found = reduceIfTree(tree)
-        console.log('After if: \n', printAst(tree))
-
         found |= reduceWhile(tree)
-        console.log('After while: \n', printAst(tree))
     }
 }

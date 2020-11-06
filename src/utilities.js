@@ -8,6 +8,16 @@ export function arrayInsertAt(arr, idx, value) {
     arr.splice(idx, 0, value);
 }
 
+export function arrayRemoveAt(array, index) {
+    array.splice(index, 1);
+}
+
+export function reverseForEach(arr, cb){
+    for(var i = arr.length-1; i>=0; i--) {
+        cb(arr[i], i)
+    }
+}
+
 export function subarray(arr, start, length) {
     var lookForEnd = length === undefined || length === -1
     var endIndex = lookForEnd ? arr.length - start : length
