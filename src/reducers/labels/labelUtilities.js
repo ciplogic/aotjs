@@ -13,7 +13,7 @@ function getFunctionName(node) {
 
 var jumpCallNames = ['__label', '__ifTrue', '__goto']
 
-function isLabelOrJump(node) {
+export function isLabelOrJump(node) {
     var functionCallName = getFunctionName(node)
     return jumpCallNames.indexOf(functionCallName) >= 0
 }
