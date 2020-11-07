@@ -1,7 +1,8 @@
-import {findExpressionInBlock} from "../visitorUtils.js";
-import {getStatement} from "../parseUtils.js";
+import {findExpressionInBlock, visitEveryBlock} from "../visitorUtils.js";
+import {getStatement, printAst} from "../parseUtils.js";
 import {extractVar, extractVarByProperty, replaceExpressionWithArray} from "./ExtractExpressionUtilities.js";
 import {isNodeIdentifier, isNodeLiteralOrIdentifier, isNodeOfType} from "../nodeTypeUtilities.js";
+import {extractLeftRightAssignmentOfNode} from "../optimizers/propagateConstantsInBlock.js";
 
 function BreakMultipleVarsInOne(parentAst) {
     var result = false;
@@ -68,8 +69,77 @@ function doSimplifyUnaryOp(binOp, parent, idxStatement) {
     }
     return false
 }
-function breakAssignmentExpressions(parentAst) {
 
+function doSimplifyCall(callExpression, parent, idxStatement) {
+
+    if (!isNodeOfType(callExpression, "CallExpression")) {
+        return false
+    }
+    if (!isNodeIdentifier(callExpression.callee)){
+        extractVarByProperty(callExpression, 'callee', parent, idxStatement)
+        return true;
+    }
+    var result = false
+    callExpression.arguments.forEach((arg,index)=>{
+        if(!isNodeLiteralOrIdentifier(arg)){
+            extractVarByProperty(callExpression.arguments, index, parent, idxStatement)
+            result = true
+        }
+    })
+    return result
+}
+
+function breakComplexAssignments(parentAst) {
+    var result = false;
+
+    visitEveryBlock(parentAst, parent => {
+        parent.body.forEach((node, index)=> {
+            if (result)
+                return
+            var leftRightAssignment = extractLeftRightAssignmentOfNode(node)
+            if (!leftRightAssignment)
+                return
+            var code = printAst(node)
+            var {left, right, targetObj, propKey} = leftRightAssignment;
+            if (doSimplifyBinaryOp(right, parent, index)) {
+                result = true;
+                return
+            }
+            if (doSimplifyUnaryOp(right, parent, index)) {
+                result = true;
+                return
+            }
+            if (doSimplifyCall(right, parent, index)) {
+                result = true;
+                return
+            }
+        })
+    })
+
+    return result
+}
+
+function breakComplexExpressions(parentAst) {
+    var result = false;
+
+    visitEveryBlock(parentAst, parent => {
+        parent.body.forEach((node, index)=> {
+            if (result)
+                return
+            if (!isNodeOfType(node, 'ExpressionStatement'))
+                return
+            var right = node.expression
+
+            if (doSimplifyCall(right, parent, index)) {
+                result = true;
+                return
+            }
+        })
+    })
+
+    return result
+}
+function breakAssignmentExpressions(parentAst) {
     var result = false;
     findExpressionInBlock(parentAst, 'ExpressionStatement', (node, parent, idxStatement) => {
         if (result)
@@ -88,30 +158,9 @@ function breakAssignmentExpressions(parentAst) {
         if (!isNodeIdentifier(assignmentExpression.left) && !isNodeIdentifier(assignmentExpression.right)) {
             extractVarByProperty(assignmentExpression, 'right', parent, idxStatement)
         }
-        //here we have assignment
-        if (doSimplifyBinaryOp(right, parent, idxStatement)) {
-            result = true;
-            return
-        }
-        if (doSimplifyUnaryOp(right, parent, idxStatement)) {
-            result = true;
-
-        }
 
 
     })
-    findExpressionInBlock(parentAst, 'VariableDeclaration', (node, parent, idxStatement) => {
-        var rightHandSide = node.declarations[0].init;
-        if (doSimplifyBinaryOp(rightHandSide, parent, idxStatement)) {
-            result = true;
-            return
-        }
-        if (doSimplifyUnaryOp(rightHandSide, parent, idxStatement)) {
-            result = true;
-
-        }
-    })
-
     return result
 }
 
@@ -120,6 +169,8 @@ export function breakExpressionInMultiplePasses(parentAst) {
     do {
         var canSimplify = BreakMultipleVarsInOne(parentAst)
         canSimplify |= breakReturnStatement(parentAst)
+        canSimplify |= breakComplexExpressions(parentAst)
+        canSimplify |= breakComplexAssignments(parentAst)
         canSimplify |= breakAssignmentExpressions(parentAst)
 
     } while (canSimplify)

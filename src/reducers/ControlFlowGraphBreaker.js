@@ -1,6 +1,6 @@
 import {findExpressionInBlock} from "../visitorUtils.js";
 import {extractVar, replaceExpressionWithArray} from "./ExtractExpressionUtilities.js";
-import {getStatement, parseJsExpression, printAst} from "../parseUtils.js";
+import {getStatement, parseJsExpression, printAst, wrapNodeInBlock, wrapNodeInBlockIfNeeded} from "../parseUtils.js";
 import {joinArrays} from "../utilities.js";
 
 var labelIndex = 0;
@@ -30,9 +30,10 @@ export function reduceIfTree(tree) {
     var result = false
 
     findExpressionInBlock(tree, 'IfStatement', (ifStatement, parent, idxStatement) => {
-
+        wrapNodeInBlockIfNeeded(ifStatement, 'consequent');
         reduceTree(ifStatement.consequent)
         if (ifStatement.alternate) {
+            wrapNodeInBlockIfNeeded(ifStatement, 'alternate');
             reduceTree(ifStatement.alternate)
         }
         var trueIfLabel = addLabel()

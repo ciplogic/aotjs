@@ -16,8 +16,6 @@ function simplifyConsecutiveLabels(blockNode) {
                 return
             if (labelNode.idx + 1 !== nextlabel.idx)
                 return
-            console.log("Moving gotos from: ", labelNode.targetId, ' to ', nextlabel.targetId)
-
             var gotos = jumpNodes.filter(it => it.isJump)
             gotos.forEach(node => {
                 updateTarget(node, labelNode.targetId, nextlabel.targetId)

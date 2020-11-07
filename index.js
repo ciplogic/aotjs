@@ -1,5 +1,5 @@
 import {readFile} from './src/utilities.js'
-import {parseJs, printAst} from './src/parseUtils.js'
+import {logAst, parseJs, printAst} from './src/parseUtils.js'
 import {reduceTree} from "./src/reducers/ControlFlowGraphBreaker.js";
 import {simplifyGotos} from "./src/reducers/labels/LabelAndGotoSimplifier.js";
 import {breakExpressionInMultiplePasses} from "./src/reducers/BreakExpressions.js";
