@@ -1,7 +1,6 @@
 import {visitEveryBlock} from "../../visitorUtils.js";
-import {parseJsExpression, printAst} from "../../parseUtils.js";
 import {arrayRemoveAt, reverseForEach} from "../../utilities.js";
-import {extractJumpNodes, updateTarget} from './labelUtilities.js'
+import {extractJumpNodes, getJumpNodeState, isLabelOrJump, updateTarget} from './labelUtilities.js'
 
 function simplifyConsecutiveLabels(blockNode) {
     var jumpNodes = extractJumpNodes(blockNode)
@@ -13,11 +12,11 @@ function simplifyConsecutiveLabels(blockNode) {
             if (idx === jumpNodes.length - 1)
                 return;
             var nextlabel = jumpNodes[idx + 1]
-            if (nextlabel.isJump)
+            if (nextlabel.isJump && nextlabel.name !== '__goto')
                 return
             if (labelNode.idx + 1 !== nextlabel.idx)
                 return
-            console.log("Movign gotos from: ", labelNode.targetId, ' to ', nextlabel.targetId)
+            console.log("Moving gotos from: ", labelNode.targetId, ' to ', nextlabel.targetId)
 
             var gotos = jumpNodes.filter(it => it.isJump)
             gotos.forEach(node => {
@@ -28,6 +27,34 @@ function simplifyConsecutiveLabels(blockNode) {
         })
     return result;
 }
+
+
+function removeSecondConsecutiveGoto(blockNode) {
+    var jumpNodes = extractJumpNodes(blockNode)
+    var result = false;
+    jumpNodes
+        .forEach((gotoNode, idx) => {
+            if (result)
+                return
+            if (gotoNode.name !== '__goto')
+                return
+            var nodeIdx = gotoNode.idx
+            if (nodeIdx === blockNode.body.length - 1)
+                return;
+
+            var nextlabel = blockNode.body[nodeIdx + 1]
+            if (isLabelOrJump(nextlabel)) {
+                var jumpState = getJumpNodeState(nextlabel, nodeIdx + 1)
+                if (!jumpState.isJump)
+                    return;
+            }
+            result = true;
+            arrayRemoveAt(blockNode.body, nodeIdx + 1)
+        })
+
+    return result;
+}
+
 function removeGotoNextLine(blockNode) {
     var jumpNodes = extractJumpNodes(blockNode)
     var result = false;
@@ -84,6 +111,7 @@ function simplifyGotosInBlock(blockNode) {
         var canSimplify = simplifyConsecutiveLabels(blockNode)
         canSimplify |= removeUnreferencedLabels(blockNode)
         canSimplify |= removeGotoNextLine(blockNode)
+        canSimplify |= removeSecondConsecutiveGoto(blockNode)
 
     } while (canSimplify)
 }

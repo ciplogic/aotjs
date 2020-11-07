@@ -22,19 +22,24 @@ export function getLabelId(node) {
     return node.expression.arguments[0].value
 }
 
+export function getJumpNodeState(node, index) {
+    var functionName = getFunctionName(node)
+    var stateJump = {
+        isJump: functionName !== '__label',
+        targetId: getLabelId(node),
+        idx: index,
+        node,
+        name: functionName,
+    }
+    return stateJump;
+}
+
 export function extractJumpNodes(blockNode) {
     var jumpNodes = []
     blockNode.body.forEach(
         (node, index) => {
             if (isLabelOrJump(node)) {
-                var functionName = getFunctionName(node)
-                var stateJump = {
-                    isJump: functionName !== '__label',
-                    targetId: getLabelId(node),
-                    idx: index,
-                    node,
-                    name: functionName,
-                }
+                var stateJump = getJumpNodeState(node, index);
                 jumpNodes.push(stateJump)
             }
         }
