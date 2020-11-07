@@ -1,13 +1,13 @@
-import {findExpressionInBlock, visitEveryBlock} from "../visitorUtils.js";
+import {findExpressionInBlock} from "../visitorUtils.js";
 
 import {replaceMemberExpressionToValue} from "./importGlobalConstants.js";
-import {isLabelOrJump} from "../reducers/labels/labelUtilities.js";
+import {propagateConstantsInBlock} from "./propagateConstantsInBlock.js";
+import {optimizeExpressions} from "./expressionCalculator.js";
 
 
 function replaceGlobalConstants(parentAst) {
     var result = false;
     findExpressionInBlock(parentAst, 'VariableDeclaration', (node, parent, idxStatement) => {
-
         result |= replaceMemberExpressionToValue(node.declarations[0], 'init')
     })
     findExpressionInBlock(parentAst, 'ExpressionStatement', (node, parent, idxStatement) => {
@@ -18,35 +18,13 @@ function replaceGlobalConstants(parentAst) {
     return result
 }
 
-function extractConstants(declarationMap, constantsMap) {
-
-}
-
-function propagateConstantsInBlock(node){
-    var result = false;
-    visitEveryBlock(node, blockNode=> {
-        var constantsMap = new Map()
-            var arr = blockNode.body
-            for (var i = 0; i < arr.length; i++) {
-                var childNode = arr[i]
-
-
-
-                if (isLabelOrJump(childNode))
-                {
-                    constantsMap.clear()
-                    continue
-                }
-
-            }
-        })
-}
 
 export function optimizeIr(parentAst) {
     var didOptimize = false;
-    do{
+    do {
         var canOptimize = replaceGlobalConstants(parentAst)
-        canOptimize |= propagateConstantsInBlock(parentAst)
+        canOptimize = propagateConstantsInBlock(parentAst) || canOptimize
+        canOptimize = optimizeExpressions(parentAst)
         didOptimize = didOptimize || canOptimize
     }while (canOptimize)
     return didOptimize

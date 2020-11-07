@@ -11,6 +11,17 @@ export const getStatement =
 export const parseJsExpression =
     jsCode => getStatement(jsCode).expression;
 
+export const buildLiteralNode =
+    literal => {
+        if (typeof literal === "number")
+            return parseJsExpression('' + literal)
+        if (typeof literal === "string")
+            return parseJsExpression('"' + literal + '"')
+        if (typeof literal === "boolean")
+            return parseJsExpression(literal ? 'true' : 'false')
+        throw new Error("Not expected literal type" + (typeof literal))
+    }
+
 export const printAst =
     astTree => astring.generate(astTree);
 

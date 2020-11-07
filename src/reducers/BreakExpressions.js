@@ -1,7 +1,7 @@
 import {findExpressionInBlock} from "../visitorUtils.js";
-import {getStatement, printAst} from "../parseUtils.js";
+import {getStatement} from "../parseUtils.js";
 import {extractVar, extractVarByProperty, replaceExpressionWithArray} from "./ExtractExpressionUtilities.js";
-import {isNodeOfType, isNodeLiteralOrIdentifier} from "../nodeTypeUtilities.js";
+import {isNodeIdentifier, isNodeLiteralOrIdentifier, isNodeOfType} from "../nodeTypeUtilities.js";
 
 function BreakMultipleVarsInOne(parentAst) {
     var result = false;
@@ -95,7 +95,7 @@ function breakAssignmentExpressions(parentAst) {
         }
         if (doSimplifyUnaryOp(right, parent, idxStatement)) {
             result = true;
-            return
+
         }
 
 
@@ -108,7 +108,7 @@ function breakAssignmentExpressions(parentAst) {
         }
         if (doSimplifyUnaryOp(rightHandSide, parent, idxStatement)) {
             result = true;
-            return
+
         }
     })
 
