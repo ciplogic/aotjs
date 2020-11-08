@@ -1,4 +1,4 @@
-export function visitEveryBlock(node, cb) {
+export function getBlockArr(node) {
     var arr
     switch (node.type) {
         case 'Program':
@@ -8,6 +8,11 @@ export function visitEveryBlock(node, cb) {
             arr = node.body
             break;
     }
+    return arr;
+}
+
+export function visitEveryBlock(node, cb) {
+    var arr = getBlockArr(node);
     if (arr) {
         cb(node)
         for (var i = 0; i < arr.length; i++) {

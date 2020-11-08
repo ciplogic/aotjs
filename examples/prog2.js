@@ -6,3 +6,4 @@ function fact2(n)
         res *= n;
     return res;
 }
+fact2(4)

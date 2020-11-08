@@ -14,15 +14,13 @@ export function replaceMemberExpressionToValue(obj, key) {
     var constantName = memberExpression.property.name
     var constValue = globalObj[constantName]
     var typeOfVal = typeof constValue;
-    if (typeOfVal === 'number') {
-        var literal = parseJsExpression(''+constValue)
-        obj[key] = literal
-        return true
-    }
-    if (typeOfVal === 'string') {
-        var literal = parseJsExpression('"'+constValue+'"')
-        obj[key] = literal
-        return true
+    switch (typeOfVal) {
+        case 'number':
+            obj[key] = parseJsExpression('' + constValue)
+            return true
+        case 'string':
+            obj[key] = parseJsExpression('"' + constValue + '"')
+            return true
     }
 
     return false

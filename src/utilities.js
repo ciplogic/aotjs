@@ -12,6 +12,10 @@ export function arrayRemoveAt(array, index) {
     array.splice(index, 1);
 }
 
+export function arrayLast(array) {
+    return array.length?array[array.length-1]:null
+}
+
 export function reverseForEach(arr, cb){
     for(var i = arr.length-1; i>=0; i--) {
         cb(arr[i], i)
