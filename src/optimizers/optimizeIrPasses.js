@@ -1,7 +1,7 @@
 import {findExpressionInBlock} from "../visitorUtils.js";
 
 import {replaceMemberExpressionToValue} from "./importGlobalConstants.js";
-import {propagateConstantsInBlock} from "./propagateConstantsInBlock.js";
+import {propagateConstantsInBlock, propagateGlobalConstants} from "./propagateConstantsInBlock.js";
 import {optimizeExpressions} from "./expressionCalculator.js";
 
 
@@ -24,8 +24,9 @@ export function optimizeIr(parentAst) {
     do {
         var canOptimize = replaceGlobalConstants(parentAst)
         canOptimize = propagateConstantsInBlock(parentAst) || canOptimize
-        canOptimize = optimizeExpressions(parentAst)
+        canOptimize = propagateGlobalConstants(parentAst) || canOptimize
+        canOptimize = optimizeExpressions(parentAst) || canOptimize
         didOptimize = didOptimize || canOptimize
-    }while (canOptimize)
+    } while (canOptimize)
     return didOptimize
 }

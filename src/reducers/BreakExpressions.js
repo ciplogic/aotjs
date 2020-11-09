@@ -1,7 +1,7 @@
 import {findExpressionInBlock, visitEveryBlock} from "../visitorUtils.js";
 import {getStatement, printAst} from "../parseUtils.js";
 import {extractVar, extractVarByProperty, replaceExpressionWithArray} from "./ExtractExpressionUtilities.js";
-import {isNodeIdentifier, isNodeLiteralOrIdentifier, isNodeOfType} from "../nodeTypeUtilities.js";
+import {isNodeEffectivelyLiteralOrIdentifier, isNodeIdentifier, isNodeOfType} from "../nodeTypeUtilities.js";
 import {extractLeftRightAssignmentOfNode} from "../optimizers/propagateConstantsInBlock.js";
 
 function BreakMultipleVarsInOne(parentAst) {
@@ -38,9 +38,9 @@ function breakReturnStatement(parentAst) {
 
 
 function isBreakableRightHandBinaryOperator(binOp) {
-    if (!isNodeLiteralOrIdentifier(binOp.left))
+    if (!isNodeEffectivelyLiteralOrIdentifier(binOp.left))
         return true;
-    if (!isNodeLiteralOrIdentifier(binOp.right))
+    if (!isNodeEffectivelyLiteralOrIdentifier(binOp.right))
         return true;
     return false
 }
@@ -63,25 +63,42 @@ function doSimplifyUnaryOp(binOp, parent, idxStatement) {
     if (!isNodeOfType(binOp, "UnaryExpression")) {
         return false
     }
-    if (!isNodeLiteralOrIdentifier(binOp.argument)){
+    if (!isNodeEffectivelyLiteralOrIdentifier(binOp.argument)) {
         extractVarByProperty(binOp, 'argument', parent, idxStatement)
         return true;
     }
     return false
 }
 
-function doSimplifyCall(callExpression, parent, idxStatement) {
 
-    if (!isNodeOfType(callExpression, "CallExpression")) {
+function doSimplifyMemberExpression(memberExpression, parent, idxStatement) {
+
+    if (!isNodeOfType(memberExpression, "MemberExpression")) {
         return false
     }
-    if (!isNodeIdentifier(callExpression.callee)){
+
+    if (!isNodeIdentifier(memberExpression.object)) {
+        extractVarByProperty(memberExpression, 'object', parent, idxStatement)
+        return true;
+    }
+    if (!isNodeIdentifier(memberExpression.property)) {
+        extractVarByProperty(memberExpression, 'property', parent, idxStatement)
+        return true;
+    }
+
+}
+
+function doSimplifyCall(callExpression, parent, idxStatement) {
+    if (!isNodeOfType(callExpression, "CallExpression") && !isNodeOfType(callExpression, 'NewExpression')) {
+        return false
+    }
+    if (!isNodeIdentifier(callExpression.callee)) {
         extractVarByProperty(callExpression, 'callee', parent, idxStatement)
         return true;
     }
     var result = false
     callExpression.arguments.forEach((arg,index)=>{
-        if(!isNodeLiteralOrIdentifier(arg)){
+        if (!isNodeEffectivelyLiteralOrIdentifier(arg)) {
             extractVarByProperty(callExpression.arguments, index, parent, idxStatement)
             result = true
         }
@@ -113,6 +130,10 @@ function breakComplexAssignments(parentAst) {
                 result = true;
                 return
             }
+            if (doSimplifyMemberExpression(right, parent, index)) {
+                result = true;
+
+            }
         })
     })
 
@@ -129,10 +150,13 @@ function breakComplexExpressions(parentAst) {
             if (!isNodeOfType(node, 'ExpressionStatement'))
                 return
             var right = node.expression
-
-            if (doSimplifyCall(right, parent, index)) {
+            if (doSimplifyMemberExpression(right, parent, index)) {
                 result = true;
                 return
+            }
+            if (doSimplifyCall(right, parent, index)) {
+                result = true;
+
             }
         })
     })
@@ -149,7 +173,7 @@ function breakAssignmentExpressions(parentAst) {
         var assignmentExpression = node.expression
         var right = assignmentExpression.right;
         if (assignmentExpression.operator !== '=') {
-            if (!isNodeLiteralOrIdentifier(right)) {
+            if (!isNodeEffectivelyLiteralOrIdentifier(right)) {
                 extractVarByProperty(assignmentExpression, 'right', parent, idxStatement)
                 result = true;
             }

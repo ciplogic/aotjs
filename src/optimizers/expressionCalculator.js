@@ -1,37 +1,29 @@
 import {visitEveryBlock} from "../visitorUtils.js";
 import {isLabelOrJump} from "../reducers/labels/labelUtilities.js";
-import {isNodeLiteral, isNodeOfType} from "../nodeTypeUtilities.js";
+import {isNodeEfectivelyLiteral, isNodeOfType} from "../nodeTypeUtilities.js";
 import {extractLeftRightAssignmentOfNode} from "./propagateConstantsInBlock.js";
-import {buildLiteralNode, printAst} from "../parseUtils.js";
+import {parseJsExpression, printAst} from "../parseUtils.js";
 
-function applyOperationOnLiteral(op, left, right) {
-    var leftVal = left.value
-    var rightVal = right.value
-    //don't use eval, do it manually
-    switch (op) {
-        case '*':
-            return leftVal * rightVal
-        case '+':
-            return leftVal + rightVal
-        case '-':
-            return leftVal - rightVal
-        default:
-            throw new Error("Cannot handle operator: " + op)
-    }
+function applyOperationOnLiteral(expressionNode) {
+    var code = printAst(expressionNode)
+    var resultEval = eval(code)
+    var result = parseJsExpression(resultEval)
+    return result
 }
 
 function simplifyBinaryOp(targetObj, propKey) {
     var node = targetObj[propKey]
     if (!isNodeOfType(node, 'BinaryExpression'))
         return
-    if (!isNodeLiteral(node.left) || !isNodeLiteral(node.right))
+    if (!isNodeEfectivelyLiteral(node.left) || !isNodeEfectivelyLiteral(node.right))
         return
-    var literal = applyOperationOnLiteral(node.operator, node.left, node.right)
-    targetObj[propKey] = buildLiteralNode(literal);
+    var literal = applyOperationOnLiteral(node)
+    targetObj[propKey] = literal
     return true
 }
 
 export function optimizeExpressions(parentAst) {
+
     var result = false;
     visitEveryBlock(parentAst, blockNode => {
         var constantsMap = new Map()

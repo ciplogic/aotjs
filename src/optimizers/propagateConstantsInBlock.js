@@ -1,5 +1,5 @@
-import {isNodeIdentifier, isNodeLiteral, isNodeOfType} from "../nodeTypeUtilities.js";
-import {visitEveryBlock} from "../visitorUtils.js";
+import {isNodeEfectivelyLiteral, isNodeIdentifier, isNodeLiteral, isNodeOfType} from "../nodeTypeUtilities.js";
+import {getBlockArr, visitEveryBlock} from "../visitorUtils.js";
 import {isLabelOrJump} from "../reducers/labels/labelUtilities.js";
 
 
@@ -28,9 +28,9 @@ function extractConstants(node, constantsMap) {
     var {left, right} = leftRightAssignment;
     if (!isNodeIdentifier(left))
         return
-    if (!isNodeLiteral(right))
-        return
-    constantsMap.set(left.name, right)
+    if (isNodeEfectivelyLiteral(right)) {
+        constantsMap.set(left.name, right)
+    }
 }
 
 function updateConstantIfNeeded(obj, propKey, constantMap) {
@@ -45,20 +45,36 @@ function updateConstantIfNeeded(obj, propKey, constantMap) {
     return true
 }
 
+function updateConstantsOnExpression(obj, propKey, constantsMap) {
+
+    var right = obj[propKey]
+    if (isNodeLiteral(right))
+        return
+    if (isNodeIdentifier(right)) {
+        return updateConstantIfNeeded(obj, propKey, constantsMap)
+    }
+    if (isNodeOfType(right, 'BinaryExpression')) {
+        var changedLeft = updateConstantsOnExpression(right, 'left', constantsMap);
+        var changedRight = updateConstantsOnExpression(right, 'right', constantsMap);
+        return changedLeft || changedRight
+    }
+    if (isNodeOfType(right, 'CallExpression') || isNodeOfType(right, 'NewExpression')) {
+        var accumulator = false;
+        var args = right.arguments
+        args.forEach((arg, index) => {
+            accumulator = updateConstantsOnExpression(args, index, constantsMap) || accumulator
+        })
+        return accumulator;
+    }
+}
+
 function applyConstantsInRightHand(node, constantsMap) {
     var leftRightAssignment = extractLeftRightAssignmentOfNode(node)
     if (!leftRightAssignment)
         return
     var {left, right, targetObj, propKey} = leftRightAssignment;
 
-    if (updateConstantIfNeeded(targetObj, propKey, constantsMap)) {
-        return true
-    }
-    if (isNodeOfType(right, 'BinaryExpression')) {
-        var changedLeft = updateConstantIfNeeded(right, 'left', constantsMap);
-        var changedRight = updateConstantIfNeeded(right, 'right', constantsMap);
-        return changedLeft || changedRight
-    }
+    return updateConstantsOnExpression(targetObj, propKey, constantsMap)
 }
 
 export function propagateConstantsInBlock(node) {
@@ -80,4 +96,24 @@ export function propagateConstantsInBlock(node) {
         }
     })
     return result
+}
+
+export function propagateGlobalConstants(node) {
+    var constantsMap = new Map()
+    var arr = getBlockArr(node);
+    arr.forEach(childNode => {
+        if (isNodeOfType(childNode, 'VariableDeclaration')) {
+            extractConstants(childNode, constantsMap)
+        }
+    })
+    if (!constantsMap.size)
+        return
+
+    var result = false
+    visitEveryBlock(node, blockNode => {
+        blockNode.body.forEach(childNode => {
+            result = applyConstantsInRightHand(childNode, constantsMap) || result
+        })
+    })
+    result = true;
 }

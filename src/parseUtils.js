@@ -20,7 +20,7 @@ export const buildLiteralNode =
             return parseJsExpression('"' + literal + '"')
         if (typeof literal === "boolean")
             return parseJsExpression(literal ? 'true' : 'false')
-        throw new Error("Not expected literal type" + (typeof literal))
+        throw new Error("Not expected literal type: " + (typeof literal))
     }
 
 export function wrapNodeInBlock(node) {

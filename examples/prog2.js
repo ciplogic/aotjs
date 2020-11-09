@@ -1,9 +1,15 @@
+const PI = Math.PI;
+const SOLAR_MASS = 4 * PI * PI;
+const DAYS_PER_YEAR = 365.24;
 
-function fact2(n)
-{
-    var res = n;
-    while (--n > 1)
-        res *= n;
-    return res;
+function Jupiter() {
+    return new Body(
+        4.84143144246472090e+00,
+        -1.16032004402742839e+00,
+        -1.03622044471123109e-01,
+        1.66007664274403694e-03 * DAYS_PER_YEAR,
+        7.69901118419740425e-03 * DAYS_PER_YEAR,
+        -6.90460016972063023e-05 * DAYS_PER_YEAR,
+        9.54791938424326609e-04 * SOLAR_MASS
+    );
 }
-console.log(fact2(4))

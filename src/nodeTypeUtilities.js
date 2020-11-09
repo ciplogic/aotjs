@@ -11,6 +11,14 @@ export function isNodeLiteral(node) {
     return isNodeOfType(node, 'Literal')
 }
 
+export function isNodeEfectivelyLiteral(right) {
+    return isNodeLiteral(right) || (isNodeOfType(right, 'UnaryExpression') && isNodeLiteral(right.argument))
+}
+
 export function isNodeLiteralOrIdentifier(node) {
     return isNodeLiteral(node) || isNodeIdentifier(node)
+}
+
+export function isNodeEffectivelyLiteralOrIdentifier(node) {
+    return isNodeEfectivelyLiteral(node) || isNodeIdentifier(node)
 }

@@ -4,7 +4,7 @@ function getFunctionName(node) {
     if (node.type !== 'ExpressionStatement')
         return ''
     var callExpression = node.expression;
-    if (callExpression.type !== 'CallExpression')
+    if (callExpression.type !== 'CallExpression' && callExpression.type !== 'NewExpression')
         return ''
     if (callExpression.callee.type !== 'Identifier')
         return '';
