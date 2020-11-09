@@ -73,6 +73,7 @@ function getUsagesOfNode(node) {
         case 'Identifier':
             return renameUsage(node)
         case 'Literal':
+        case 'ThisExpression':
             return
         case 'FunctionDeclaration': {
             getUsagesOfNode(node.name)
@@ -84,6 +85,7 @@ function getUsagesOfNode(node) {
         return
     }
         case 'CallExpression':
+        case 'NewExpression':
         {
             getUsagesOfNode(node.callee)
             node.arguments.forEach(getUsagesOfNode)
@@ -118,9 +120,8 @@ function getUsagesOfNode(node) {
             getUsagesOfNode(node.object)
             return
         }
-
         default:
-            throw new Error("Unhandled")
+            throw new Error("Unhandled: "+nodeType)
 
 
     }

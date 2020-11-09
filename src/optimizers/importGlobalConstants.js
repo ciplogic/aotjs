@@ -1,5 +1,5 @@
 import {isNodeIdentifier, isNodeOfType} from "../nodeTypeUtilities.js";
-import {parseJsExpression} from "../parseUtils.js";
+import {buildLiteralNode} from "../parseUtils.js";
 
 export function replaceMemberExpressionToValue(obj, key) {
     var memberExpression = obj[key]
@@ -7,21 +7,14 @@ export function replaceMemberExpressionToValue(obj, key) {
         return false
     if (!isNodeIdentifier(memberExpression.object) || !isNodeIdentifier(memberExpression.property))
         return false
-    var apiObj = memberExpression.object.name
-    var globalObj = global[apiObj]
+    var globalObj = global[memberExpression.object.name]
     if (typeof globalObj!== 'object')
         return false
     var constantName = memberExpression.property.name
     var constValue = globalObj[constantName]
-    var typeOfVal = typeof constValue;
-    switch (typeOfVal) {
-        case 'number':
-            obj[key] = parseJsExpression('' + constValue)
-            return true
-        case 'string':
-            obj[key] = parseJsExpression('"' + constValue + '"')
-            return true
+    if (typeof constValue === 'function'){
+        return false
     }
-
-    return false
+    obj[key] = buildLiteralNode(constValue)
+    return true
 }

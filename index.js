@@ -1,4 +1,4 @@
-import {readFile} from './src/utilities.js'
+import {readFile, writeFile} from './src/utilities.js'
 import {logAst, parseJs, printAst} from './src/parseUtils.js'
 import {reduceTree} from "./src/reducers/ControlFlowGraphBreaker.js";
 import {simplifyGotos} from "./src/reducers/labels/LabelAndGotoSimplifier.js";
@@ -16,3 +16,5 @@ breakExpressionInMultiplePasses(tree)
 optimizeIr(tree)
 
 console.log('After: \n', printAst(tree))
+
+writeFile('out.js', printAst(tree))

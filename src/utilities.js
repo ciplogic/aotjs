@@ -1,7 +1,10 @@
-import {readFileSync} from "fs";
+import {readFileSync, writeFileSync} from "fs";
 
 export function readFile(fileName) {
     return readFileSync(fileName, 'utf8')
+}
+export function writeFile(fileName, text) {
+    return writeFileSync(fileName, text, 'utf8')
 }
 
 export function arrayInsertAt(arr, idx, value) {
