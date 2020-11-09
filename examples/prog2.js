@@ -6,4 +6,4 @@ function fact2(n)
         res *= n;
     return res;
 }
-fact2(4)
+console.log(fact2(4))

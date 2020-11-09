@@ -62,22 +62,24 @@ export function reduceWhile(tree) {
     var result = false
 
     //todo: handle break/continue as gotos
-    findExpressionInBlock(tree, 'WhileStatement', (ifStatement, parent, idxStatement) => {
-        reduceTree(ifStatement.body)
+    findExpressionInBlock(tree, 'WhileStatement', (whileStatement, parent, idx) => {
+        wrapNodeInBlockIfNeeded(whileStatement, 'body');
+
+        reduceTree(whileStatement.body)
         var startWhileLabel = addLabel()
         var trueIfLabel = addLabel()
         var endWhileLabel = addLabel()
-        var testTrue = ifTrue(ifStatement.test, trueIfLabel.labelIndex)
+        var testTrue = ifTrue(whileStatement.test, trueIfLabel.labelIndex)
         var repeatLoop = addGoto(startWhileLabel.labelIndex)
         var jumpToFalse = addGoto(endWhileLabel.labelIndex)
         var newOps = joinArrays(
             [startWhileLabel.statement,
                 testTrue, jumpToFalse, trueIfLabel.statement],
-            ifStatement.body.body,
+            whileStatement.body.body,
             repeatLoop,
             endWhileLabel.statement)
 
-        replaceExpressionWithArray(parent, idxStatement, newOps)
+        replaceExpressionWithArray(parent, idx, newOps)
         result = true
     })
     return result;
