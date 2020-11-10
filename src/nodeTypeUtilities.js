@@ -19,6 +19,12 @@ export function isNodeLiteralOrIdentifier(node) {
     return isNodeLiteral(node) || isNodeIdentifier(node)
 }
 
+export function getVarDeclaration(varNode) {
+    if(!isNodeOfType(varNode, 'VariableDeclaration'))
+        return
+    return varNode.declarations[0]
+}
+
 export function isNodeEffectivelyLiteralOrIdentifier(node) {
     return isNodeEfectivelyLiteral(node) || isNodeIdentifier(node)
 }

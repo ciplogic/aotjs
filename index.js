@@ -6,16 +6,16 @@ import {breakExpressionInMultiplePasses} from "./src/reducers/BreakExpressions.j
 import {optimizeIr} from "./src/optimizers/optimizeIrPasses.js";
 import {prefixDeclarations} from "./src/prefixer/PrefixDeclarations.js";
 
-var code = readFile('./examples/prog1.js')
+var code = readFile('./examples/prog2.js')
 var tree = parseJs(code)
 
 reduceTree(tree)
 prefixDeclarations(tree)
-simplifyGotos(tree)
 do {
+    simplifyGotos(tree)
     breakExpressionInMultiplePasses(tree)
     var canOpt = optimizeIr(tree)
 } while (canOpt)
-console.log('After: \n', printAst(tree))
+
 
 writeFile('out.js', printAst(tree))

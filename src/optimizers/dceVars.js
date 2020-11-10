@@ -1,15 +1,105 @@
 import {visitEveryBlock} from "../visitorUtils.js";
+import {
+    getVarDeclaration, isNodeEfectivelyLiteral,
+    isNodeEffectivelyLiteralOrIdentifier, isNodeIdentifier
+} from "../nodeTypeUtilities.js";
+import {extractLeftRightAssignmentOfNode} from "./propagateConstantsInBlock.js";
+import {arrayRemoveAt} from "../utilities.js";
 
-export function dceVars(node) {
+function extractDeclarations(node) {
     var declarations = new Map()
-    var usages = new Map()
-
-
-    var result = false
     visitEveryBlock(node, blockNode => {
-        blockNode.body.forEach(childNode => {
-            result = applyConstantsInRightHand(childNode, constantsMap) || result
+        blockNode.body.forEach((childNode, index) => {
+
+            var decl = getVarDeclaration(childNode)
+            if (!decl)
+                return
+            if(!isNodeEffectivelyLiteralOrIdentifier(decl.init))
+                return
+            declarations.set(childNode.declarations[0].id.name, true)
         })
     })
-    result = true;
+    return declarations
+}
+
+function removeUsageOfExpression(node, usedDeclaration) {
+    if (!isNodeIdentifier(node)) {
+        return;
+    }
+    usedDeclaration.delete(node.name)
+}
+
+function getRightHandUsage(node, usedDeclarations){
+    if (!node)
+        return;
+    if (isNodeIdentifier(node))
+    {
+        findUnusedDeclarations(node, usedDeclarations)
+        return
+    }
+    if (isNodeEfectivelyLiteral(node))
+    {
+        return;
+    }
+    var nodeType = node.type
+    switch (nodeType) {
+        case 'BinaryExpression': {
+            removeUsageOfExpression(node.left, usedDeclarations)
+            removeUsageOfExpression(node.right, usedDeclarations)
+            return;
+        }
+        case 'NewExpression':
+        case 'CallExpression': {
+            removeUsageOfExpression(node.name, usedDeclarations)
+            node.arguments.forEach(arg=>removeUsageOfExpression(arg, usedDeclarations))
+            return;
+        }
+        case 'UnaryExpression':
+        {
+            removeUsageOfExpression(node.argument, usedDeclarations)
+            break
+        }
+
+        case 'MemberExpression':
+        {
+            removeUsageOfExpression(node.object, usedDeclarations)
+            return;
+        }
+        default:
+            throw new Error("not handled getting usage of type: "+ nodeType)
+    }
+}
+
+function findUnusedDeclarations(parentAst, usedDeclarations){
+    visitEveryBlock(parentAst, blockNode => {
+        blockNode.body.forEach((childNode, index) => {
+            var leftRightAssignment = extractLeftRightAssignmentOfNode(childNode)
+            if (!leftRightAssignment)
+                return
+            var {left, right, targetObj, propKey} = leftRightAssignment;
+            if (propKey === 'right') //for assignemnts
+            {
+                removeUsageOfExpression(left, usedDeclarations)
+            }
+            getRightHandUsage(right, usedDeclarations);
+        })
+    })
+}
+
+export function dceVars(parentAst) {
+    var declarations = extractDeclarations(parentAst)
+    findUnusedDeclarations(parentAst, declarations)
+
+    visitEveryBlock(parentAst, blockNode => {
+        blockNode.body.forEach((varNode, index) => {
+
+            if (varNode.type!=='VariableDeclaration')return
+            var varDecl =getVarDeclaration(varNode)
+            if (declarations.get(varDecl.id.name)){
+                arrayRemoveAt(blockNode.body, index)
+            }
+        })
+    })
+
+    return !!declarations.size
 }

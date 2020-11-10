@@ -23,16 +23,14 @@ function simplifyBinaryOp(targetObj, propKey) {
 }
 
 export function optimizeExpressions(parentAst) {
-
     var result = false;
     visitEveryBlock(parentAst, blockNode => {
         var constantsMap = new Map()
         var arr = blockNode.body
-        for (var i = 0; i < arr.length; i++) {
-            var childNode = arr[i]
+        arr.forEach(childNode=>{
             var leftRightAssignment = extractLeftRightAssignmentOfNode(childNode)
             if (!leftRightAssignment)
-                continue
+                return
             var {left, right, targetObj, propKey} = leftRightAssignment;
             result = simplifyBinaryOp(targetObj, propKey) || result
 
@@ -40,8 +38,7 @@ export function optimizeExpressions(parentAst) {
                 constantsMap.clear()
 
             }
-
-        }
+        })
     })
     return result
 }
