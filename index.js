@@ -5,8 +5,9 @@ import {simplifyGotos} from "./src/reducers/labels/LabelAndGotoSimplifier.js";
 import {breakExpressionInMultiplePasses} from "./src/reducers/BreakExpressions.js";
 import {optimizeIr} from "./src/optimizers/optimizeIrPasses.js";
 import {prefixDeclarations} from "./src/prefixer/PrefixDeclarations.js";
+import {generateProgramCode} from "./src/outputCode/outputCodeGenerator.js";
 
-var code = readFile('./examples/prog2.js')
+var code = readFile('./examples/prog1.js')
 var tree = parseJs(code)
 
 reduceTree(tree)
@@ -17,5 +18,8 @@ do {
     var canOpt = optimizeIr(tree)
 } while (canOpt)
 
+var generatedCppCode = generateProgramCode(tree)
+
+writeFile('out.cpp', generatedCppCode)
 
 writeFile('out.js', printAst(tree))

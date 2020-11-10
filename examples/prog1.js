@@ -152,7 +152,7 @@ function energy() {
     return e;
 }
 
-const n = +process.argv[2];
+const n = 1000;
 
 offsetMomentum();
 
