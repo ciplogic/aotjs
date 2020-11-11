@@ -17,6 +17,17 @@ ${closure}
     return fullCode;
 }
 
+function codeGenClassImplementation(fnDecl) {
+
+    var argsText = fnDecl.args.map(arg=>`JsVal ${arg}`).join(', ');
+    var code = `JsVal ${fnDecl.name}::invoke(${argsText}){`
+    code += '\n'
+
+    code += '}\n'
+
+    return code
+}
+
 
 function writeMain() {
     return `
@@ -39,6 +50,10 @@ export function generateProgramCode(parentAst) {
 `
     functionsToGenerate.forEach(fnDec=>{
         codeOut += codeGenClassDeclaration(fnDec)
+    })
+
+    functionsToGenerate.forEach(fnDec=>{
+        codeOut += codeGenClassImplementation(fnDec)
     })
 
     codeOut += writeMain()

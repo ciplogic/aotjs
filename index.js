@@ -19,7 +19,6 @@ do {
 } while (canOpt)
 
 var generatedCppCode = generateProgramCode(tree)
-
 writeFile('out.cpp', generatedCppCode)
 
 writeFile('out.js', printAst(tree))
