@@ -1,6 +1,6 @@
 import {parseJsExpression} from "../../parseUtils.js";
 
-function getFunctionName(node) {
+export function getFunctionName(node) {
     if (node.type !== 'ExpressionStatement')
         return ''
     var callExpression = node.expression;
