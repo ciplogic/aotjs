@@ -6,8 +6,9 @@ import {breakExpressionInMultiplePasses} from "./src/reducers/BreakExpressions.j
 import {optimizeIr} from "./src/optimizers/optimizeIrPasses.js";
 import {prefixDeclarations} from "./src/prefixer/PrefixDeclarations.js";
 import {generateProgramCode} from "./src/outputCode/outputCodeGenerator.js";
+import {writeCmakeFileInDid} from "./src/outputCode/cmakeGenerator.js";
 
-var code = readFile('./examples/prog1.js')
+var code = readFile('./examples/prog2.js')
 var tree = parseJs(code)
 
 reduceTree(tree)
@@ -19,6 +20,8 @@ do {
 } while (canOpt)
 
 var generatedCppCode = generateProgramCode(tree)
-writeFile('out.cpp', generatedCppCode)
+writeFile('out/out.cpp', generatedCppCode)
+writeCmakeFileInDid('out', 'out.cpp')
+
 
 writeFile('out.js', printAst(tree))

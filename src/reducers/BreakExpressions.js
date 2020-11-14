@@ -1,5 +1,5 @@
 import {findExpressionInBlock, visitEveryBlock} from "../visitorUtils.js";
-import {getStatement, printAst} from "../parseUtils.js";
+import {getStatement, parseJs, printAst} from "../parseUtils.js";
 import {extractVar, extractVarByProperty, replaceExpressionWithArray} from "./ExtractExpressionUtilities.js";
 import {isNodeEffectivelyLiteralOrIdentifier, isNodeIdentifier, isNodeOfType} from "../nodeTypeUtilities.js";
 import {extractLeftRightAssignmentOfNode} from "../optimizers/propagateConstantsInBlock.js";
@@ -188,6 +188,28 @@ function breakAssignmentExpressions(parentAst) {
     return result
 }
 
+function breakUpdateExpression (parentAst) {
+    var result = false;
+    visitEveryBlock(parentAst, blockNode => {
+        blockNode.body.forEach((expressionNode, index) => {
+            if (result)
+                return
+            if (expressionNode.type !== 'ExpressionStatement')
+                return
+            var node = expressionNode.expression;
+            if (node.type !== 'UpdateExpression')
+                return
+            var argument = node.argument
+            var exprVar = extractVar(node.argument, blockNode.body, index)
+            //TODO: for -- should be '-1'
+            var replacementCode = argument.name + ' = ' + exprVar.varName + '+1'
+            var evalExpression = parseJs(replacementCode)
+            blockNode.body[index + 1] = evalExpression
+            result = true
+        })
+    })
+    return result
+}
 
 export function breakExpressionInMultiplePasses(parentAst) {
     do {
@@ -196,6 +218,7 @@ export function breakExpressionInMultiplePasses(parentAst) {
         canSimplify |= breakComplexExpressions(parentAst)
         canSimplify |= breakComplexAssignments(parentAst)
         canSimplify |= breakAssignmentExpressions(parentAst)
+        canSimplify |= breakUpdateExpression(parentAst)
 
     } while (canSimplify)
 }

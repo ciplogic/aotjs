@@ -23,6 +23,8 @@ export function generateProgramCode(parentAst) {
     var codeOut = ""
     codeOut += `
 #include "rtl/aotjs.hpp"
+
+using namespace aotJs;
 `
     functionsToGenerate.forEach(fnDec=>{
         codeOut += codeGenClassDeclaration(fnDec)
