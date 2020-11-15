@@ -6,17 +6,11 @@ import {isNodeIdentifier} from "../nodeTypeUtilities.js";
 import {writeOps} from "./ops/opsWriter.js";
 
 export function extractFunctionDeclaration(functionNode){
-    var name = functionNode.id.name
-    var args = functionNode.params.map(arg=>arg.name)
+    var name = functionNode.name
+    var args = functionNode.args
     var body = functionNode.body
 
     var usesThis = false
-    walk.simple(functionNode, {
-        ThisExpression(node, state) {
-            usesThis = true
-            return true
-        }
-    });
 
     return {name, args, body, usesThis, functionNode};
 }

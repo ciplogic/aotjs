@@ -31,7 +31,7 @@ export function optimizeExpressions(parentAst) {
             var leftRightAssignment = extractLeftRightAssignmentOfNode(childNode)
             if (!leftRightAssignment)
                 return
-            var {left, right, targetObj, propKey} = leftRightAssignment;
+            var {leftNode, rightNode, targetObj, propKey} = leftRightAssignment;
             result = simplifyBinaryOp(targetObj, propKey) || result
 
             if (isLabelOrJump(childNode)) {

@@ -117,20 +117,20 @@ function breakComplexAssignments(parentAst) {
             if (!leftRightAssignment)
                 return
             var code = printAst(node)
-            var {left, right, targetObj, propKey} = leftRightAssignment;
-            if (doSimplifyBinaryOp(right, parent, index)) {
+            var {leftNode, rightNode, targetObj, propKey} = leftRightAssignment;
+            if (doSimplifyBinaryOp(rightNode, parent, index)) {
                 result = true;
                 return
             }
-            if (doSimplifyUnaryOp(right, parent, index)) {
+            if (doSimplifyUnaryOp(rightNode, parent, index)) {
                 result = true;
                 return
             }
-            if (doSimplifyCall(right, parent, index)) {
+            if (doSimplifyCall(rightNode, parent, index)) {
                 result = true;
                 return
             }
-            if (doSimplifyMemberExpression(right, parent, index)) {
+            if (doSimplifyMemberExpression(rightNode, parent, index)) {
                 result = true;
 
             }

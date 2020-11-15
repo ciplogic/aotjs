@@ -18,18 +18,18 @@ export function extractLeftRightAssignmentOfNode(node) {
     } else {
         return
     }
-    return {left, right, targetObj, propKey}
+    return {leftNode: left, rightNode: right, targetObj, propKey}
 }
 
 function extractConstants(node, constantsMap) {
     var leftRightAssignment = extractLeftRightAssignmentOfNode(node)
     if (!leftRightAssignment)
         return
-    var {left, right} = leftRightAssignment;
-    if (!isNodeIdentifier(left))
+    var {leftNode, rightNode} = leftRightAssignment;
+    if (!isNodeIdentifier(leftNode))
         return
-    if (isNodeEfectivelyLiteral(right)) {
-        constantsMap.set(left.name, right)
+    if (isNodeEfectivelyLiteral(rightNode)) {
+        constantsMap.set(leftNode.name, rightNode)
     }
 }
 
@@ -72,7 +72,7 @@ function applyConstantsInRightHand(node, constantsMap) {
     var leftRightAssignment = extractLeftRightAssignmentOfNode(node)
     if (!leftRightAssignment)
         return
-    var {left, right, targetObj, propKey} = leftRightAssignment;
+    var {leftNode, rightNode, targetObj, propKey} = leftRightAssignment;
 
     return updateConstantsOnExpression(targetObj, propKey, constantsMap)
 }

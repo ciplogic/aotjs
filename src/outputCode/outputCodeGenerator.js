@@ -1,9 +1,9 @@
-import {findExpressionInBlock, visitEveryBlock} from "../visitorUtils.js";
 import {
     codeGenClassDeclaration,
     codeGenClassImplementation,
     extractFunctionDeclaration
 } from "./extractFunctionDeclaration.js";
+import {opsFunctionVisitor} from "../mir/AstToOpsBuilder.js";
 
 function writeMain() {
     return `
@@ -15,7 +15,7 @@ int main() {
 
 export function generateProgramCode(parentAst) {
     var functionsToGenerate = []
-    findExpressionInBlock(parentAst, 'FunctionDeclaration', (node, parent, idx)=>{
+    opsFunctionVisitor(parentAst, (node)=>{
         var functionDeclaration = extractFunctionDeclaration(node)
         functionsToGenerate.push(functionDeclaration)
     })

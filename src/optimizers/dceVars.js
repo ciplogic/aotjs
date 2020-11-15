@@ -76,12 +76,12 @@ function findUnusedDeclarations(parentAst, usedDeclarations){
             var leftRightAssignment = extractLeftRightAssignmentOfNode(childNode)
             if (!leftRightAssignment)
                 return
-            var {left, right, targetObj, propKey} = leftRightAssignment;
+            var {leftNode, rightNode, targetObj, propKey} = leftRightAssignment;
             if (propKey === 'right') //for assignemnts
             {
-                removeUsageOfExpression(left, usedDeclarations)
+                removeUsageOfExpression(leftNode, usedDeclarations)
             }
-            getRightHandUsage(right, usedDeclarations);
+            getRightHandUsage(rightNode, usedDeclarations);
         })
     })
 }

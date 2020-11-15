@@ -7,19 +7,32 @@ import {optimizeIr} from "./src/optimizers/optimizeIrPasses.js";
 import {prefixDeclarations} from "./src/prefixer/PrefixDeclarations.js";
 import {generateProgramCode} from "./src/outputCode/outputCodeGenerator.js";
 import {writeCmakeFileInDid} from "./src/outputCode/cmakeGenerator.js";
+import {buildOpsOfWrappedProgram} from "./src/mir/AstToOpsBuilder.js";
 
 var code = readFile('./examples/prog2.js')
-var tree = parseJs(code)
+function parseJsWrapped(jsCode){
+    var wrappedCode = `
+function __global_main(){
+${jsCode}
+}
+`
+    return parseJs(wrappedCode)
+}
+//var tree = parseJs(code)
+var tree = parseJsWrapped(code)
 
-reduceTree(tree)
-prefixDeclarations(tree)
 do {
+
+    reduceTree(tree)
     simplifyGotos(tree)
     breakExpressionInMultiplePasses(tree)
     var canOpt = optimizeIr(tree)
 } while (canOpt)
+prefixDeclarations(tree)
 
-var generatedCppCode = generateProgramCode(tree)
+var functionOps = buildOpsOfWrappedProgram(tree)
+
+var generatedCppCode = generateProgramCode(functionOps)
 writeFile('out/out.cpp', generatedCppCode)
 writeCmakeFileInDid('out', 'out.cpp')
 
