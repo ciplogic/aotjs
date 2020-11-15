@@ -1,6 +1,7 @@
 import {visitEveryBlock} from "../../visitorUtils.js";
 import {arrayRemoveAt, reverseForEach} from "../../utilities.js";
 import {extractJumpNodes, getJumpNodeState, isLabelOrJump, updateTarget} from './labelUtilities.js'
+import {logAst} from "../../parseUtils.js";
 
 function simplifyConsecutiveLabels(blockNode) {
     var jumpNodes = extractJumpNodes(blockNode)
@@ -104,12 +105,35 @@ function removeUnreferencedLabels(blockNode) {
     return !!idxToRemove.length;
 }
 
+function removeRowAfterReturnIfNotLabel(blockNode) {
+    for(var i = 0; i<blockNode.body.length-1; i++){
+        var rowNode = blockNode.body[i]
+        var nodeType = rowNode.type
+        if (nodeType!=="ReturnStatement")
+            continue
+
+        var node = blockNode.body[i+1]
+        if (isLabelOrJump(node)) {
+            var stateJump = getJumpNodeState(node, i);
+        }
+        if (!stateJump || stateJump.isJump)
+        {
+            arrayRemoveAt(blockNode.body, i+1)
+            return true
+        }
+    }
+
+    return false;
+}
+
 function simplifyGotosInBlock(blockNode) {
     do {
         var canSimplify = simplifyConsecutiveLabels(blockNode)
         canSimplify |= removeUnreferencedLabels(blockNode)
         canSimplify |= removeGotoNextLine(blockNode)
         canSimplify |= removeSecondConsecutiveGoto(blockNode)
+
+        canSimplify |= removeRowAfterReturnIfNotLabel(blockNode)
 
     } while (canSimplify)
 }

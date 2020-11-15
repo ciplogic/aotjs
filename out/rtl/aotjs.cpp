@@ -5,37 +5,65 @@
 #include <stdexcept>
 #include "aotjs.hpp"
 using namespace aotJs;
+namespace aotJs {
 
-JsVal _valOf(int val) {
-    JsVal result;
-    result.typeId = aotJs::Int;
-    result._intValue = val;
-    return result;
-}
-
-bool isTruish(JsVal jsVal) {
-    switch (jsVal.typeId) {
-        case Undefined: return false;
-        case Int: return jsVal._intValue;
-        default:
-            throw std::runtime_error("Unhandled jsVal type");
-
+    int _valInt(JsVal val)
+    {
+        return val._intValue;
     }
-    return false;
-}
 
-JsVal add(JsVal left, JsVal right) {
-    return JsVal();
-}
+    JsVal _val(int val) {
+        JsVal result;
+        result.typeId = aotJs::Int;
+        result._intValue = val;
+        return result;
+    }
 
-JsVal sub(JsVal left, JsVal right) {
-    return JsVal();
-}
+    bool isTruish(JsVal jsVal) {
+        switch (jsVal.typeId) {
+            case Undefined:
+                return false;
+            case Int:
+                return jsVal._intValue;
+            default:
+                throw std::runtime_error("Unhandled jsVal type");
 
-JsVal mul(JsVal left, JsVal right) {
-    return JsVal();
-}
+        }
+        return false;
+    }
 
-JsVal lessThan(JsVal left, JsVal right) {
-    return JsVal();
+    JsVal add(JsVal left, JsVal right) {
+        if (left.typeId == Int) {
+            return _val(_valInt(left) + _valInt(right));
+        }
+        return JsVal();
+    }
+
+    JsVal sub(JsVal left, JsVal right) {
+        if (left.typeId == Int) {
+            return _val(_valInt(left) - _valInt(right));
+        }
+        return JsVal();
+    }
+
+    JsVal mul(JsVal left, JsVal right) {
+        if (left.typeId == Int) {
+            return _val(_valInt(left) * _valInt(right));
+        }
+        return JsVal();
+    }
+
+    JsVal lessThan(JsVal left, JsVal right) {
+        if (left.typeId == Int) {
+            return _val(_valInt(left) < _valInt(right));
+        }
+        return JsVal();
+    }
+
+    JsVal lessOrEqThan(JsVal left, JsVal right) {
+        if (left.typeId == Int) {
+            return _val(_valInt(left) <= _valInt(right));
+        }
+        return JsVal();
+    }
 }

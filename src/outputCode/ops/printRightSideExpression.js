@@ -15,6 +15,7 @@ function evalBinaryOp(node) {
         case '-': methodName = 'sub'; break;
         case '*': methodName = 'mul'; break;
         case '<': methodName = 'lessThan'; break;
+        case '<=': methodName = 'lessOrEqThan'; break;
         default: throw new Error("Operator not handled: "+node.operator)
     }
     return `${methodName}(${evalRightHand(left)}, ${evalRightHand(right)})`

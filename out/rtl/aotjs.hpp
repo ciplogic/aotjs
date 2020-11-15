@@ -22,4 +22,5 @@ namespace aotJs {
     JsVal sub(JsVal left, JsVal right);
     JsVal mul(JsVal left, JsVal right);
     JsVal lessThan(JsVal left, JsVal right);
+    JsVal lessOrEqThan(JsVal left, JsVal right);
 }

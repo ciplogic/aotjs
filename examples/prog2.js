@@ -1,18 +1,9 @@
-
-
-function fact3(n)
+function fact(n)
 {
-    function inner(res,n)
-    {
-        if (n < 2)
-            return res;
-        else
-            return inner(res*n, n-1);
-    }
-    return inner(1,n);
+    if (n <= 2)
+        return n;
+    else
+        return n*fact(n-1);
 }
 
-var cnt = 0;
-++cnt;
-
-console.log("fact3", fact3(100));
+console.log("fact", fact(100));
