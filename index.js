@@ -20,13 +20,13 @@ ${jsCode}
 }
 //var tree = parseJs(code)
 var tree = parseJsWrapped(code)
-
+var canOpt
 do {
 
     reduceTree(tree)
     simplifyGotos(tree)
     breakExpressionInMultiplePasses(tree)
-    var canOpt = optimizeIr(tree)
+    //var canOpt = optimizeIr(tree)
 } while (canOpt)
 prefixDeclarations(tree)
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 namespace aotJs {
     enum JsValType{
         Undefined,
@@ -13,6 +15,11 @@ namespace aotJs {
             int _intValue;
             double _doubleValue;
         };
+        JsVal() = default;
+        JsVal(int iVal);
+
+        JsVal invoke(JsVal jsValArr);
+        JsVal operator()(int v = 0);
     };
 
     JsVal _val(int val);
@@ -23,4 +30,6 @@ namespace aotJs {
     JsVal mul(JsVal left, JsVal right);
     JsVal lessThan(JsVal left, JsVal right);
     JsVal lessOrEqThan(JsVal left, JsVal right);
+
+    JsVal jsReadField(JsVal obj, const std::string& property);
 }

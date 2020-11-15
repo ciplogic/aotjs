@@ -32,7 +32,7 @@ function evalBinaryOp(node) {
 }
 function writeReadField(opNode) {
     var code = opNode.isVar? 'JsVal ':''
-    var templateCode = `${code}${opNode.left} = jsReadField(${opNode.obj}, '${opNode.key}')`
+    var templateCode = `${code}${opNode.left} = jsReadField(${opNode.obj}, "${opNode.key}")`
     return templateCode;
 }
 
@@ -44,7 +44,7 @@ function writeCall(opNode) {
         code += `${opNode.left} =`
     }
     var args = opNode.args.join(',')
-    var templateCode = `${code} ${opNode.callee}.invoke(${args})`
+    var templateCode = `${code} (${opNode.callee}()).invoke(${args})`
     return templateCode
 }
 

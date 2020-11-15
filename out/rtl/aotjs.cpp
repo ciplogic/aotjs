@@ -66,4 +66,21 @@ namespace aotJs {
         }
         return JsVal();
     }
+
+    JsVal aotJs::jsReadField(JsVal obj, const std::string &property) {
+        return JsVal();
+    }
+
+
+    JsVal::JsVal(int i) {
+        *this = _val(i);
+    }
+
+    JsVal JsVal::invoke(JsVal jsValArr) {
+        return JsVal();
+    }
+
+    JsVal JsVal::operator()(int v) {
+        return *this;
+    }
 }
